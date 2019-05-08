@@ -331,7 +331,7 @@ public class NodesMetaDataGet extends DeclarativeWebScript
             {
                 for( ChildAssociationRef assRef : nodeMetaData.getParentAssocs())
                 {
-                    parentAssocs.add(solrSerializer.serializeToJSONString(assRef));
+                    parentAssocs.add("\"" + solrSerializer.serializeToJSONString(assRef) + "\"");
                 }
             }
 
@@ -339,7 +339,7 @@ public class NodesMetaDataGet extends DeclarativeWebScript
             {
                 for( ChildAssociationRef assRef : nodeMetaData.getChildAssocs() )
                 {
-                    childAssocs.add(solrSerializer.serializeToJSONString(assRef));
+                    childAssocs.add("\"" + solrSerializer.serializeToJSONString(assRef) + "\"");
                 }
             }
 
