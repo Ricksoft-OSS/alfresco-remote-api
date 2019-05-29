@@ -55,7 +55,7 @@
          "status": "<#if node.deleted>d<#else>u</#if>",
          <#if node.aclId??>"aclId": ${node.aclId?c},</#if>
          <#if node.shardPropertyValue??>"shardPropertyValue": "${node.shardPropertyValue?string}",</#if>
-         "explicitShardId": "${node.explicitShardId?c}",
+         <#if node.explicitShardId??>"explicitShardId": "${node.explicitShardId?c}",</#if>
          "tenant": "${node.tenant}"
       }
 </#macro>
