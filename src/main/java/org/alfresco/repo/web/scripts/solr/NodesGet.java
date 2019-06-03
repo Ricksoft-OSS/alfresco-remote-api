@@ -283,7 +283,7 @@ public class NodesGet extends DeclarativeWebScript
             return this.shardPropertyValue;
         }
 
-        public int getExplicitShardId()
+        public Integer getExplicitShardId()
         {
             return this.explicitShardId;
         }
