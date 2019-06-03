@@ -234,7 +234,7 @@ public class NodesGet extends DeclarativeWebScript
         private final String tenant;
         private final Long aclId; 
         private final String shardPropertyValue;
-        private final int explicitShardId;
+        private final Integer explicitShardId;
 
         public NodeRecord(Node node, QNameDAO qnameDAO, TenantService tenantService)
         {
