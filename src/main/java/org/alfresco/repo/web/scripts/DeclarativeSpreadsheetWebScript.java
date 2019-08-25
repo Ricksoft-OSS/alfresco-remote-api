@@ -40,8 +40,8 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.CSVStrategy;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -72,7 +72,7 @@ public abstract class DeclarativeSpreadsheetWebScript extends DeclarativeWebScri
     public static final String MODEL_EXCEL = "excel";
     public static final String PARAM_REQ_DELIMITER = "delimiter";
     
-    private CSVStrategy csvStrategy;
+    private CSVFormat csvFormat;
     
     protected DictionaryService dictionaryService;
     protected String filenameBase;
@@ -119,29 +119,29 @@ public abstract class DeclarativeSpreadsheetWebScript extends DeclarativeWebScri
     		throws IOException;
     
     /**
-     * Set the CSVStrategy
+     * Set the CSVFormat
      * 
-     * @param csvStrategy CSVStrategy
+     * @param csvFormat CSVFormat
      */
-    public void setCsvStrategy(CSVStrategy csvStrategy)
+    public void setCsvFormat(CSVFormat csvFormat)
     {
-        this.csvStrategy = csvStrategy;
+        this.csvFormat = csvFormat;
     }
     
     /**
-     * Get the CSVStrategy. Returns {@link CSVStrategy#EXCEL_STRATEGY} if none was set.
+     * Get the CSVFormat. Returns {@link CSVFormat#EXCEL} if none was set.
      * 
-     * @return CSVStrategy
+     * @return CSVFormat
      */
-    public CSVStrategy getCsvStrategy()
+    public CSVFormat getCsvFormat()
     {
-        if (csvStrategy == null)
+        if (csvFormat == null)
         {
-            return CSVStrategy.EXCEL_STRATEGY;
+            return CSVFormat.EXCEL;
         }
         else
         {
-            return csvStrategy;
+            return csvFormat;
         }
     }
     
@@ -196,11 +196,8 @@ public abstract class DeclarativeSpreadsheetWebScript extends DeclarativeWebScri
     {
         Pattern qnameMunger = Pattern.compile("([A-Z][a-z]+)([A-Z].*)");
         String delimiterParam = req.getParameter(PARAM_REQ_DELIMITER);
-        CSVStrategy reqCSVstrategy = null;
-        if (delimiterParam != null && !delimiterParam.isEmpty())
-        {
-            reqCSVstrategy = new CSVStrategy(delimiterParam.charAt(0), '"', CSVStrategy.COMMENTS_DISABLED);
-        }
+        CSVFormat reqCSVFormat = null;
+
         // Build up the details of the header
         List<Pair<QName, Boolean>> propertyDetails = buildPropertiesForHeader(resource, format, req);
         String[] headings = new String[propertyDetails.size()];
@@ -258,14 +255,19 @@ public abstract class DeclarativeSpreadsheetWebScript extends DeclarativeWebScri
            }
            properties.add(qn);
         }
-        
+
+        if (delimiterParam != null && !delimiterParam.isEmpty())
+        {
+            reqCSVFormat = CSVFormat.EXCEL.withDelimiter(delimiterParam.charAt(0))
+                    .withQuote('"')
+                    .withHeader(headings);
+        }
         
         // Output
         if("csv".equals(format))
         {
             StringWriter sw = new StringWriter();
-            CSVPrinter csv = new CSVPrinter(sw, reqCSVstrategy != null ? reqCSVstrategy : getCsvStrategy());
-            csv.println(headings);
+            CSVPrinter csv = new CSVPrinter(sw, reqCSVFormat != null ? reqCSVFormat : getCsvFormat());
             
             populateBody(resource, csv, properties);
             
