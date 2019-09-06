@@ -52,8 +52,8 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVStrategy;
-import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -389,11 +389,19 @@ public class UserCSVUploadPost extends DeclarativeWebScript
         throws IOException
     {
         InputStreamReader reader = new InputStreamReader(input, Charset.forName("UTF-8"));
-        CSVParser csv = new CSVParser(reader, CSVStrategy.EXCEL_STRATEGY);
-        String[][] data = csv.getAllValues();
-        if(data != null && data.length > 0)
+        CSVParser csv = CSVFormat.EXCEL.withHeader().parse(reader);
+        Map<String,Integer> headerMap = csv.getHeaderMap();
+        String[] row = new String[headerMap.size()];
+        List<String[]> data = new ArrayList<String[]>();
+        csv.getRecords().stream().forEach(record -> {
+            headerMap.values().stream().forEach(idx -> {
+                row[idx] = record.get(idx);
+            });
+            data.add(row);
+        });
+        if(data != null && data.size() > 0)
         {
-            processSpreadsheetUpload(data, users);
+            processSpreadsheetUpload(data.toArray(new String[data.size()][]), users);
         }
     }
     
