@@ -137,7 +137,10 @@ public abstract class DeclarativeSpreadsheetWebScript extends DeclarativeWebScri
     {
         if (csvFormat == null)
         {
-            return CSVFormat.EXCEL;
+            return CSVFormat.EXCEL
+                    .withQuote('"')
+                    .withRecordSeparator("\n")
+                    .withFirstRecordAsHeader();
         }
         else
         {
@@ -198,6 +201,15 @@ public abstract class DeclarativeSpreadsheetWebScript extends DeclarativeWebScri
         String delimiterParam = req.getParameter(PARAM_REQ_DELIMITER);
         CSVFormat reqCSVFormat = null;
 
+        if (delimiterParam != null && !delimiterParam.isEmpty())
+        {
+            reqCSVFormat = CSVFormat.EXCEL
+                            .withDelimiter(delimiterParam.charAt(0))
+                            .withQuote('"')
+                            .withRecordSeparator("\n")
+                            .withFirstRecordAsHeader();
+        }
+
         // Build up the details of the header
         List<Pair<QName, Boolean>> propertyDetails = buildPropertiesForHeader(resource, format, req);
         String[] headings = new String[propertyDetails.size()];
@@ -255,19 +267,13 @@ public abstract class DeclarativeSpreadsheetWebScript extends DeclarativeWebScri
            }
            properties.add(qn);
         }
-
-        if (delimiterParam != null && !delimiterParam.isEmpty())
-        {
-            reqCSVFormat = CSVFormat.EXCEL.withDelimiter(delimiterParam.charAt(0))
-                    .withQuote('"')
-                    .withHeader(headings);
-        }
         
         // Output
         if("csv".equals(format))
         {
             StringWriter sw = new StringWriter();
             CSVPrinter csv = new CSVPrinter(sw, reqCSVFormat != null ? reqCSVFormat : getCsvFormat());
+            csv.printRecord(headings);
             
             populateBody(resource, csv, properties);
             
